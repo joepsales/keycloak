@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:13.2
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRESQL_DB}
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASS}
+    volumes:
+       - ./data:/var/lib/postgresql/data
+    networks:
+      - local-keycloak
+
+  keycloak:
+    depends_on:
+      - postgres
+    container_name: local_keycloak
+    environment:
+      KEYCLOAK_DATABASE_HOST: postgresql
+      KEYCLOAK_DATABASE_PORT: 5432
+      KEYCLOAK_DATABASE_NAME: ${POSTGRESQL_DB}
+      KEYCLOAK_DATABASE_USER: ${POSTGRESQL_USER}
+      KEYCLOAK_DATABASE_PASSWORD: ${POSTGRESQL_PASS}
+      KEYCLOAK_DATABASE_SCHEMA: public
+      KEYCLOAK_CREATE_ADMIN_USER: true
+      KEYCLOAK_ADMIN_USER: user
+      KEYCLOAK_ADMIN_PASSWORD: bitnami
+    ports:
+      - "80:8080"
+    image: bitnami/keycloak
+    restart: unless-stopped
+    networks:
+      - local-keycloak
+
+networks:
+  local-keycloak:
